@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>digest.medical — دايجست پزشکی</title>
+  <meta name="description" content="اخبار و مقالات پزشکی روزانه — مروری بر مهم‌ترین یافته‌های پزشکی">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="site-header">
+    <div class="header-content">
+      <span class="header-icon" aria-hidden="true">🩺</span>
+      <h1 class="site-title">digest<span>.medical</span></h1>
+      <p class="site-subtitle">اخبار و مقالات پزشکی روزانه</p>
+    </div>
+  </header>
+
+  <!-- ========== SEARCH ========== -->
+  <div class="search-wrapper">
+    <div class="search-bar">
+      <span class="search-icon" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+      </span>
+      <input type="search" id="search-input" placeholder="جستجو در مقالات..." aria-label="جستجو">
+    </div>
+    <div class="search-filters" id="filter-bar">
+      <button class="filter-btn active" data-filter="all">همه</button>
+      <button class="filter-btn" data-filter="RCT">کارآزمایی بالینی</button>
+      <button class="filter-btn" data-filter="Meta-analysis">فراتحلیل</button>
+      <button class="filter-btn" data-filter="Systematic Review">مرور نظام‌مند</button>
+      <button class="filter-btn" data-filter="Observational">مشاهده‌ای</button>
+      <button class="filter-btn" data-filter="Case Report">گزارش مورد</button>
+      <button class="filter-btn" data-filter="Clinical Guideline">راهنمای بالینی</button>
+    </div>
+  </div>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <main>
+    <div class="posts-grid" id="posts-grid">
+
+      <div class="empty-state" id="empty-state">
+        <div class="empty-state-icon" aria-hidden="true">📋</div>
+        <h2>هنوز مقاله‌ای منتشر نشده است</h2>
+        <p>مقالات پزشکی به زودی اضافه خواهند شد.</p>
+      </div>
+    </div>
+    <div class="no-results" id="no-results">
+      نتیجه‌ای برای جستجوی شما یافت نشد.
+    </div>
+  </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="site-footer">
+    <p>© <span id="footer-year">2026</span> digest.medical — تمامی حقوق محفوظ است. تألیف: علیرضا</p>
+  </footer>
+
+  <!-- ========== CLIENT-SIDE SEARCH & FILTER ========== -->
+  <script>
+    (function() {
+      'use strict';
+      var grid = document.getElementById('posts-grid');
+      var searchInput = document.getElementById('search-input');
+      var filterBar = document.getElementById('filter-bar');
+      var noResults = document.getElementById('no-results');
+      var emptyState = document.getElementById('empty-state');
+
+      if (!grid || !searchInput) return;
+
+      var allCards = [];
+      var currentFilter = 'all';
+
+      var serverCards = grid.querySelectorAll('.post-card');
+      for (var i = 0; i < serverCards.length; i++) {
+        allCards.push({
+          el: serverCards[i],
+          title: (serverCards[i].querySelector('.card-title') || {}).textContent || '',
+          summary: (serverCards[i].querySelector('.card-summary') || {}).textContent || '',
+          badge: (serverCards[i].querySelector('.card-badge') || {}).textContent || ''
+        });
+      }
+
+      if (allCards.length > 0 && emptyState) emptyState.style.display = 'none';
+
+      function applyFilter() {
+        var query = (searchInput.value || '').trim().toLowerCase();
+        var visible = 0;
+        for (var i = 0; i < allCards.length; i++) {
+          var card = allCards[i];
+          var matchesFilter = (currentFilter === 'all') || card.badge.indexOf(currentFilter) !== -1;
+          var matchesSearch = !query || card.title.toLowerCase().indexOf(query) !== -1 || card.summary.toLowerCase().indexOf(query) !== -1;
+          if (matchesFilter && matchesSearch) {
+            card.el.style.display = '';
+            visible++;
+          } else {
+            card.el.style.display = 'none';
+          }
+        }
+        if (emptyState) emptyState.style.display = (allCards.length === 0) ? '' : 'none';
+        noResults.className = (visible === 0 && allCards.length > 0) ? 'no-results visible' : 'no-results';
+      }
+
+      searchInput.addEventListener('input', applyFilter);
+
+      if (filterBar) {
+        filterBar.addEventListener('click', function(e) {
+          var btn = e.target.closest('.filter-btn');
+          if (!btn) return;
+          var buttons = filterBar.querySelectorAll('.filter-btn');
+          for (var j = 0; j < buttons.length; j++) buttons[j].classList.remove('active');
+          btn.classList.add('active');
+          currentFilter = btn.getAttribute('data-filter') || 'all';
+          applyFilter();
+        });
+      }
+
+      var yearEl = document.getElementById('footer-year');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+    })();
+  </script>
+
+</body>
+</html>
