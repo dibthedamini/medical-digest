@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مقاله — digest.medical</title>
+  <meta name="description" content="جزئیات مقاله پزشکی — digest.medical">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ========== HEADER (compact) ========== -->
+  <header class="site-header" style="padding: 1.2rem 1.5rem;">
+    <div class="header-content">
+      <a href="index.html" style="color: inherit; text-decoration: none;">
+        <span class="header-icon" aria-hidden="true" style="font-size:1.5rem;">🩺</span>
+        <h1 class="site-title" style="font-size:1.5rem;">digest<span>.medical</span></h1>
+      </a>
+    </div>
+  </header>
+
+  <!-- ========== MAIN ========== -->
+  <main>
+    <div class="post-layout">
+
+      <!-- Back button -->
+      <div class="post-article">
+        <a href="index.html" class="back-btn">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          بازگشت به صفحه اصلی
+        </a>
+
+        <!-- Post header (populated by JS) -->
+        <div class="post-header" id="post-header">
+          <h1 id="post-title">در حال بارگذاری...</h1>
+          <div class="post-meta-row" id="post-meta"></div>
+        </div>
+
+        <!-- Post body (loaded from posts/[slug].html) -->
+        <div class="post-body" id="post-body">
+          <p>در حال بارگذاری محتوا...</p>
+        </div>
+      </div>
+
+      <!-- Table of Contents sidebar -->
+      <aside class="post-toc" id="post-toc">
+        <div class="toc-title">فهرست مطالب</div>
+        <ul class="toc-list" id="toc-list">
+          <li><a href="#">—</a></li>
+        </ul>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="site-footer">
+    <p>© 2026 digest.medical — تمامی حقوق محفوظ است. تألیف: علیرضا</p>
+  </footer>
+
+  <!-- ========== POST LOADER ========== -->
+  <script>
+    (function() {
+      'use strict';
+
+      // Parse ?slug=... from URL
+      var params = new URLSearchParams(window.location.search);
+      var slug = params.get('slug');
+
+      if (!slug) {
+        document.getElementById('post-title').textContent = 'مقاله یافت نشد';
+        document.getElementById('post-body').innerHTML = '<p>لطفاً یک مقاله انتخاب کنید.</p>';
+        return;
+      }
+
+      // Update page title
+      document.title = slug + ' — digest.medical';
+
+      // Load post metadata from posts.json
+      fetch('posts.json')
+        .then(function(r) { return r.json(); })
+        .then(function(posts) {
+          var post = null;
+          for (var i = 0; i < posts.length; i++) {
+            if (posts[i].slug === slug) { post = posts[i]; break; }
+          }
+
+          if (!post) {
+            document.getElementById('post-title').textContent = 'مقاله یافت نشد';
+            document.getElementById('post-body').innerHTML = '<p>مقاله‌ای با این شناسه یافت نشد.</p>';
+            return;
+          }
+
+          // Update header
+          document.getElementById('post-title').textContent = post.title;
+          document.title = post.title + ' — digest.medical';
+
+          // Build meta badges
+          var meta = document.getElementById('post-meta');
+          var metaHTML = '';
+          if (post.date) {
+            metaHTML += '<span class="meta-item"><svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg> ' + post.date + '</span>';
+          }
+          if (post.journal) {
+            metaHTML += '<span class="meta-item"><svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg> ' + post.journal + '</span>';
+          }
+          if (post.study_type) {
+            metaHTML += '<span class="meta-item card-badge badge-' + getBadgeClass(post.study_type) + '">' + post.study_type + '</span>';
+          }
+          // Reading time estimate
+          var wordCount = (post.summary || '').length;
+          var readMin = Math.max(1, Math.round(wordCount / 40));
+          metaHTML += '<span class="meta-item">⏱ حدود ' + readMin + ' دقیقه مطالعه</span>';
+          meta.innerHTML = metaHTML;
+
+          // Load article body
+          return fetch('posts/' + slug + '.html');
+        })
+        .then(function(r) {
+          if (!r) return;
+          return r.text();
+        })
+        .then(function(html) {
+          if (!html) return;
+          document.getElementById('post-body').innerHTML = html;
+          buildTOC();
+        })
+        .catch(function() {
+          document.getElementById('post-title').textContent = 'خطا در بارگذاری';
+          document.getElementById('post-body').innerHTML = '<p>متأسفانه در بارگذاری مقاله خطایی رخ داده است.</p>';
+        });
+
+      function getBadgeClass(type) {
+        if (!type) return 'other';
+        if (type.indexOf('RCT') !== -1) return 'rct';
+        if (type.indexOf('Meta') !== -1) return 'meta';
+        if (type.indexOf('Systematic') !== -1 || type.indexOf('Review') !== -1 && type.indexOf('Meta') === -1) return 'sr';
+        if (type.indexOf('Observ') !== -1) return 'obs';
+        if (type.indexOf('Case') !== -1) return 'case';
+        if (type.indexOf('Guide') !== -1) return 'guide';
+        return 'other';
+      }
+
+      // Build Table of Contents from h2/h3 in post body
+      function buildTOC() {
+        var body = document.getElementById('post-body');
+        var headings = body.querySelectorAll('h2, h3');
+        var tocList = document.getElementById('toc-list');
+        if (headings.length === 0 || !tocList) {
+          var toc = document.getElementById('post-toc');
+          if (toc) toc.style.display = 'none';
+          return;
+        }
+        tocList.innerHTML = '';
+        for (var i = 0; i < headings.length; i++) {
+          var h = headings[i];
+          if (!h.id) h.id = 'section-' + i;
+          var li = document.createElement('li');
+          var a = document.createElement('a');
+          a.href = '#' + h.id;
+          a.textContent = h.textContent;
+          if (h.tagName === 'H3') a.style.paddingRight = '1rem';
+          li.appendChild(a);
+          tocList.appendChild(li);
+        }
+      }
+
+      // Update document language
+      document.documentElement.lang = 'fa';
+      document.documentElement.dir = 'rtl';
+    })();
+  </script>
+
+</body>
+</html>
